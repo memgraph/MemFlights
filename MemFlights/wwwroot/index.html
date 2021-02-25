@@ -2,29 +2,111 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <title>Flight Graph Demow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://uploads-ssl.webflow.com/5e7ceb09657a69bdab054b3a/5ea9d03561073b122a2bcf58_favicon.png" rel="shortcut icon" type="image/x-icon">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+
+    <title>Flight Graph Demo</title>
 </head>
 <body>
+    <div id="graph"></div>
 
-    <script>
-        const force = d3.layout.force().charge(-200).linkDistance(30).size([800, 800]);
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand">Flight Graph Demo</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </nav>
+
+    <script type="text/javascript">
+        const width = 800, height = 800;
         const svg = d3.select("#graph").append("svg").attr("width", "100%").attr("height", "100%").attr("pointer-events", "all");
+
+        
 
         d3.json("/graph", function (error, graph) {
             if (error) return;
 
-            force.nodes(graph.nodes).links(graph.links).start();
-            const link = svg.selectAll(".link").data(graph.links).enter().append("line").attr("class", "link");
-            const node = svg.selectaLL(".node").data(graph.nodes).enter().append("circle").attr("class", function (d) { return "node " + d.label; }).attr("r", 10).call(force.drag);
+            const simulation = d3.forceSimulation(graph.nodes)
+                .force("link", d3.forceLink(links).id(d => d.id))
+                .force("charge", d3.forceManyBody())
+                .force("center", d3.forceCenter(width / 2, height / 2));
+
+            const link = svg.selectAll(".link")
+                .data(graph.links).enter().append("line").attr("class", "link");
+
+            const node = svg.selectAll(".node")
+                .data(graph.nodes).enter().append("circle")
+                .attr("class", function (d) { return "node " + d.label; })
+                .attr("r", 10)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
 
             node.append("title").text(function (d) { return d.name; })
 
-            force.on("tick", function () {
-                link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.source.x; }).attr("y2", function (d) { return d.source.y; });
-                node.attr("cx", function (d) { return d.x; }).attr("cy", function (d) { return d.y; });
-            });
-        });
+            simulation
+                .nodes(graph.nodes)
+                .on("tick", ticked);
+
+            simulation
+                .force("link")
+                .links(graph.links);
+
+
+            function ticked() {
+                link.attr("x1", function (d) { return d.source.x; })
+                    .attr("y1", function (d) { return d.source.y; })
+                    .attr("x2", function (d) { return d.target.x; })
+                    .attr("y2", function (d) { return d.target.y; });
+
+                node.attr("cx", function (d) { return d.x; })
+                    .attr("cy", function (d) { return d.y; });
+            };
+
+            function dragstarted(d) {
+                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(d) {
+                d.fx = d3.event.x;
+                d.fy = d3.event.y;
+            }
+
+            function dragended(d) {
+                if (!d3.event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        }); 
+
     </script>
+
+    <style type="text/css">
+        .node {
+            stroke: #222;
+            stroke-width: 1.5px;
+        }
+
+            .node.airport {
+                fill: #BBB;
+            }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: .6;
+            stroke-width: 1px;
+        }
+    </style>
+
+
 </body>
 </html>
