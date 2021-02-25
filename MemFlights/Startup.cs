@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Neo4j.Driver;
+using MemFlights.Repository;
 
 namespace MemFlights
 {
@@ -16,6 +18,12 @@ namespace MemFlights
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers();
+            services.AddScoped<IFlightsRepository, FlightsRepository>();
+            services.AddSingleton(GraphDatabase.Driver(
+                Environment.GetEnvironmentVariable("DB_URI") ?? "bolt://localhost:7687",
+                AuthTokens.None
+                ));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

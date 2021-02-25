@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <title>Flight Graph Demow</title>
+</head>
+<body>
+
+    <script>
+        const force = d3.layout.force().charge(-200).linkDistance(30).size([800, 800]);
+        const svg = d3.select("#graph").append("svg").attr("width", "100%").attr("height", "100%").attr("pointer-events", "all");
+
+        d3.json("/graph", function (error, graph) {
+            if (error) return;
+
+            force.nodes(graph.nodes).links(graph.links).start();
+            const link = svg.selectAll(".link").data(graph.links).enter().append("line").attr("class", "link");
+            const node = svg.selectaLL(".node").data(graph.nodes).enter().append("circle").attr("class", function (d) { return "node " + d.label; }).attr("r", 10).call(force.drag);
+
+            node.append("title").text(function (d) { return d.name; })
+
+            force.on("tick", function () {
+                link.attr("x1", function (d) { return d.source.x; }).attr("y1", function (d) { return d.source.y; }).attr("x2", function (d) { return d.source.x; }).attr("y2", function (d) { return d.source.y; });
+                node.attr("cx", function (d) { return d.x; }).attr("cy", function (d) { return d.y; });
+            });
+        });
+    </script>
+</body>
+</html>
