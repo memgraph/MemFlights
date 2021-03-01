@@ -51,7 +51,7 @@ namespace MemFlights.Repository
                         var destAirportIndex = nodes.IndexOf(destAirport);
                         destAirportIndex = destAirportIndex == -1 ? nodes.Count : destAirportIndex;
                         nodes.Add(destAirport);
-                        links.Add(new D3Link(destAirportIndex, originAirportIndex));
+                        links.Add(new D3Link(destAirport.Title, orgAirport.Title));
 
                     }
                     return new D3Graph(nodes, links);

@@ -40,10 +40,10 @@ namespace MemFlights.Models
     }
 
     public class D3Link { 
-        public int Source { get; }
-        public int Target { get; }
+        public string Source { get; }
+        public string Target { get; }
 
-        public D3Link(int source, int target) {
+        public D3Link(string source, string target) {
             Source = source;
             Target = target;
         }

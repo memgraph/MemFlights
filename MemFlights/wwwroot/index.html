@@ -9,39 +9,42 @@
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js" charset="utf-8"></script>
 
     <title>Flight Graph Demo</title>
 </head>
 <body>
-    <div id="graph"></div>
-
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand">Flight Graph Demo</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
     </nav>
+    
+    <div id="graph"></div>
 
     <script type="text/javascript">
-        const width = 800, height = 800;
-        const svg = d3.select("#graph").append("svg").attr("width", "100%").attr("height", "100%").attr("pointer-events", "all");
-
+        const width = window.innerWidth, height = window.innerHeight;
         
+        const svg = d3.select("#graph").append("svg").attr("width", width).attr("height", height).attr("pointer-events", "all");
 
-        d3.json("/graph", function (error, graph) {
-            if (error) return;
+        d3.json("/graph").then(function (graph) {
+            const links = graph.links.map(d => Object.create(d));
+            const nodes = graph.nodes.map(d => Object.create(d));
 
-            const simulation = d3.forceSimulation(graph.nodes)
-                .force("link", d3.forceLink(links).id(d => d.id))
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.title))
                 .force("charge", d3.forceManyBody())
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
-            const link = svg.selectAll(".link")
-                .data(graph.links).enter().append("line").attr("class", "link");
+            var g = svg.append("g")
+                .attr("class", "everything");
 
-            const node = svg.selectAll(".node")
-                .data(graph.nodes).enter().append("circle")
+            const link = g.append("g").selectAll("lines")
+                .data(links).enter().append("line").attr("class", "link");
+
+            const node = g.append("g").selectAll("circle")
+                .data(nodes).enter().append("circle")
                 .attr("class", function (d) { return "node " + d.label; })
                 .attr("r", 10)
                 .call(d3.drag()
@@ -52,13 +55,21 @@
             node.append("title").text(function (d) { return d.name; })
 
             simulation
-                .nodes(graph.nodes)
+                .nodes(nodes)
                 .on("tick", ticked);
 
             simulation
                 .force("link")
-                .links(graph.links);
+                .links(links);
 
+            var zoom_handler = d3.zoom()
+                .on("zoom", zoom_actions).scaleExtent([1, 40]);
+
+            zoom_handler(g);
+
+            function zoom_actions() {
+                g.attr("transform", event.transform);
+            }
 
             function ticked() {
                 link.attr("x1", function (d) { return d.source.x; })
@@ -68,25 +79,25 @@
 
                 node.attr("cx", function (d) { return d.x; })
                     .attr("cy", function (d) { return d.y; });
-            };
-
-            function dragstarted(d) {
-                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
             }
 
-            function dragged(d) {
-                d.fx = d3.event.x;
-                d.fy = d3.event.y;
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
             }
 
-            function dragended(d) {
-                if (!d3.event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
             }
-        }); 
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+        });
 
     </script>
 
