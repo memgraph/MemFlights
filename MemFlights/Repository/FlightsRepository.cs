@@ -37,16 +37,7 @@ namespace MemFlights.Repository
                         var orgAirport = new D3Node(title: record["origin_air"].As<string>(), label: "airport");
                         var originAirportIndex = nodes.Count;
                         nodes.Add(orgAirport);
-                        /*
-                        foreach (var destination in record["dest_air"].As<IList<string>>())
-                        {
-                            var destAirport = new D3Node(destination, "airport");
-                            var destAirportIndex = nodes.IndexOf(destAirport);
-                            destAirportIndex = destAirportIndex == -1 ? nodes.Count : destAirportIndex;
-                            nodes.Add(destAirport);
-                            links.Add(new D3Link(destAirportIndex, originAirportIndex));
-                        }
-                        */
+                     
                         var destAirport = new D3Node(record["dest_air"].As<string>(), "airport");
                         var destAirportIndex = nodes.IndexOf(destAirport);
                         destAirportIndex = destAirportIndex == -1 ? nodes.Count : destAirportIndex;

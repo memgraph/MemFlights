@@ -1,4 +1,4 @@
-:START_ID(IATA_CODE),:END_ID(IATA_CODE),:TYPE,flight_number:int,airline:string,date:string,departure_time:string,distance:int
+:START_ID(iata_code),:END_ID(iata_code),:TYPE,flight_number:int,airline:string,date:string,departure_time:string,distance:int
 ANC,SEA,IS_FLYING_TO,98,AS,1/1/2015,23:54,1448
 LAX,PBI,IS_FLYING_TO,2336,AA,1/1/2015,00:02,2330
 SFO,CLT,IS_FLYING_TO,840,US,1/1/2015,00:18,2296

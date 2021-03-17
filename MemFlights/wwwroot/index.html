@@ -14,7 +14,7 @@
     <title>Flight Graph Demo</title>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand">Flight Graph Demo</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -28,7 +28,13 @@
         
         const svg = d3.select("#graph").append("svg").attr("width", width).attr("height", height).attr("pointer-events", "all");
 
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
         d3.json("/graph").then(function (graph) {
+
+            
             const links = graph.links.map(d => Object.create(d));
             const nodes = graph.nodes.map(d => Object.create(d));
 
@@ -50,9 +56,14 @@
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
-                    .on("end", dragended));
+                    .on("end", dragended))
+                
 
             node.append("title").text(function (d) { return d.name; })
+
+            node.on("mouseover", function (d) { tooltip.text(d.name); return tooltip.style("visibility", "visible"); });
+            node.on("mousemove", function () { return tooltip.style("top", (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px"); });
+            node.on("mouseout", function () { return tooltip.style("visibility", "hidden"); });
 
             simulation
                 .nodes(nodes)
@@ -63,13 +74,13 @@
                 .links(links);
 
             var zoom_handler = d3.zoom()
-                .on("zoom", zoom_actions).scaleExtent([1, 40]);
-
-            zoom_handler(g);
-
+                .on("zoom", zoom_actions);
+            
             function zoom_actions() {
                 g.attr("transform", event.transform);
             }
+
+            svg.call(zoom_handler);
 
             function ticked() {
                 link.attr("x1", function (d) { return d.source.x; })
